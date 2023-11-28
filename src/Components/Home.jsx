@@ -126,9 +126,9 @@ const Home = () => {
 
           }
           else {
-            console.log(result.data.results);
+            console.log(result.data.results); 
             // setresult('Results')//
-            // setsearchMovie(result.data.results)
+            setsearchMovie(result.data.results)
             setempty('')
             // console.log(result.data.results);
           }
