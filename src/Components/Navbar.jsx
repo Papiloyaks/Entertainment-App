@@ -8,7 +8,7 @@ import  Pexel from '../image/pexel.jpg'
 const Navbar = () => {
   return (
     <>
-    <div className='sticky w-full bg-red-700 z-[10000000]'>
+    <div className='fixed w-full bg-red-700 z-[10000000] top-0'>
         <nav className='border border-red-500 flex justify-around py-1'>
             <Link className='mt-2 text-white' to="/">Home</Link>
             <div className='flex gap-10 mt-3 text-white'>

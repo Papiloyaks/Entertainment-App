@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useState } from 'react'
 
@@ -12,9 +13,11 @@ const Home = () => {
   const imgBaseUrl = "https://image.tmdb.org/t/p";
   const [select, setselect] = useState('day')
   const [search,setSearch] = useState([])
-  // const [result,setresult] = useState([])
-  const [searchMovie,setsearchMovie] = useState([])
-  const [empty,setempty] = useState([])
+  // const [searchResults,setSearchResults] = useState([])
+  const [searchMovie,setSearchMovie] = useState([])
+  const [empty,setEmpty] = useState("")
+  const navigate = useNavigate()
+  
   
 
 
@@ -26,11 +29,11 @@ const Home = () => {
     let endpoint5 = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&api_key=${key}`
     let endpoint6 = `https://api.themoviedb.org/3/search/multi?query=${searchMovie}&include_adult=false&language=en-US&page=1&api_key=${key}`
 
-    // let navigate = useNavigate()
+    
 
     useEffect(() => {
       if(select !== 'day'){
-          axios.get(endpoint5)
+          axios.get(endpoint4)
           .then((response)=>{
               setMovie(response.data.results);
               // setMyLoader(false)
@@ -116,25 +119,50 @@ const Home = () => {
 
     const Search = () => {
       // alert('here')
-      if (searchMovie == ""){
-        setempty('field is empty!!!')
+      if (searchMovie === ""){
+        setEmpty('field is empty!!!')
       }else {
         axios.get(endpoint6)
         .then((result)=>{
-          if(result.data.results.length < 1){
-            setempty('movie or series not found.')
+          if(result.data.results.length === 0){
+            setEmpty('movie or series not found.')
 
           }
           else {
             console.log(result.data.results); 
             // setresult('Results')//
-            setsearchMovie(result.data.results)
-            setempty('')
+            setSearch(result.data.results)
+            setEmpty('')
             // console.log(result.data.results);
           }
         })
+
+        .catch((error) => {
+          console.error('Error fetching data:', error);
+          // Handle the error, e.g., set an error state
+        });
       }
     }
+
+    const detailsPage = (e,mediaType,index) => {
+      if (mediaType=='tv') {
+          localStorage.setItem('myId',JSON.stringify({e,mediaType}))
+          navigate('/details')
+      }else if (mediaType=='person') {
+          localStorage.setItem('myId',JSON.stringify({e,mediaType}))
+          localStorage.setItem('actors',JSON.stringify({people}))
+          console.log(index);
+      }
+      else {
+          localStorage.setItem('myId',JSON.stringify(e))
+          navigate('/details')
+          // console.log(e)
+      }
+    }
+      
+
+
+    
     
 
    
@@ -142,9 +170,10 @@ const Home = () => {
   return (
     <>
       <div>
-      <div className='p-5'>
-      <input type="type" onChange={(e) => setsearchMovie(e.target.value)} placeholder='search movies or Tv series' className='w-80 h-10 rounded border' /> <button onClick={Search} className='rounded-lg bg-red-700 text-white w-40 h-10 hover:bg-white hover:text-black'>Search</button>
+      <div className='p-20 -ms-10'>
+      <input type="text"  onChange={(e) => setSearchMovie(e.target.value)} placeholder='search movies or Tv series' className='w-80 h-10 rounded border' /> <button onClick={Search} className='rounded-lg bg-red-700 text-white w-40 h-10 hover:bg-white hover:text-black'>Search</button>
       </div>
+      <small className='text-red-700 font-bold'>{empty}</small>
 
       <div className='flex'>
         <h1 className='ms-10 text-xl text-white'>Trending Today</h1>
@@ -155,11 +184,21 @@ const Home = () => {
         
       </div>
       <div>
+           <div className='grid lg:grid-cols-7 grid-cols-3 gap-3 p-10'>
+          {
+              search.map((item, index) =>(
+             <div onClick={()=>detailsPage(item.id, item.media_type)}  key={index}>
+               <img className='w-full h-[100px] rounded-lg' src={`${imgBaseUrl}/original/${item.poster_path}`} alt="" />
+              <div className='text-center text-white p-2'>{item.title}</div>
+             </div>
+            ))
+          }
+        </div>
         <h1 className='text-amber-300 text-xl ms-10 mt-10'>Movies:</h1>
         <div className='grid lg:grid-cols-7 grid-cols-3 gap-3 p-10'>
           {
             movie && movie.map((item, index) =>(
-             <div key={index}>
+             <div onClick={()=>detailsPage(item.id, item.media_type)}  key={index}>
                <img className='w-full h-[100px] rounded-lg scale-x-95' src={`${imgBaseUrl}/original/${item.poster_path}`} alt="" />
               <div className='text-center text-white p-2'>{item.title}</div>
              </div>
@@ -173,7 +212,7 @@ const Home = () => {
         <div className='grid lg:grid-cols-7 grid-cols-3 gap-3 p-10'>
           {
             serie && serie.map((item, index) =>(
-             <div key={index}>
+             <div onClick={()=>detailsPage(item.id, item.media_type)}  key={index}>
                <img className='w-full h-[100px] rounded-lg' src={`${imgBaseUrl}/original/${item.poster_path}`} alt="" />
               <div className='text-center text-white p-2'>{item.name}</div>
              </div>
@@ -185,22 +224,12 @@ const Home = () => {
           <div className='grid lg:grid-cols-7 grid-cols-3 gap-3 p-10'>
           {
             discover && discover.map((item, index) =>(
-             <div key={index}>
+             <div onClick={()=>detailsPage(item.id, item.media_type)}  key={index}>
                <img className='w-full h-[100px] rounded-lg' src={`${imgBaseUrl}/original/${item.poster_path}`} alt="" />
               <div className='text-center text-white p-2'>{item.title}</div>
              </div>
             ))
           }
-           <div className='grid lg:grid-cols-7 grid-cols-3 gap-3 p-10'>
-          {
-            search && search.map((item, index) =>(
-             <div key={index}>
-               <img className='w-full h-[100px] rounded-lg' src={`${imgBaseUrl}/original/${item.poster_path}`} alt="" />
-              <div className='text-center text-white p-2'>{item.title}</div>
-             </div>
-            ))
-          }
-        </div>
         </div>
         </div>
       </div>
